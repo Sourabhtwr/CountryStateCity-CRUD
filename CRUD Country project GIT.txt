@@ -1,0 +1,787 @@
+/////HTML File 
+
+
+
+<div class="container my-4">
+<div class="container my-4">
+  <div class="row g-4 mb-5">
+    <!-- Employee Form -->
+    <div class="col-md-4">
+      <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Manage Employee</h5>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="saveOrUpdateEmployee()">
+            <input type="hidden" [(ngModel)]="employeeForm.intId" name="employeeIntId" />
+
+            <div class="mb-3">
+              <label class="form-label">Employee Name</label>
+              <input
+                type="text"
+                [(ngModel)]="employeeForm.varName"
+                name="varName"
+                class="form-control"
+                placeholder="Enter employee name"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Phone Number</label>
+              <input
+                type="text"
+                [(ngModel)]="employeeForm.varPhoneNumber"
+                name="varPhoneNumber"
+                class="form-control"
+                placeholder="Enter phone number"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                [(ngModel)]="employeeForm.varEmail"
+                name="varEmail"
+                class="form-control"
+                placeholder="Enter email"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Department</label>
+              <input
+                type="text"
+                [(ngModel)]="employeeForm.varDepartment"
+                name="varDepartment"
+                class="form-control"
+                placeholder="Enter department"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Country</label>
+              <select
+                class="form-select"
+                [(ngModel)]="employeeForm.countryId"
+                name="employeeCountryId"
+                (change)="onEmployeeCountryChange()"
+                required
+              >
+                <option [ngValue]="null">-- Select Country --</option>
+                <option *ngFor="let c of countries" [ngValue]="c.intId">
+                  {{ c.strName }}
+                </option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">State</label>
+              <select
+                class="form-select"
+                [(ngModel)]="employeeForm.stateId"
+                name="employeeStateId"
+                (change)="onEmployeeStateChange()"
+                [disabled]="!employeeForm.countryId"
+                required
+              >
+                <option [ngValue]="null">-- Select State --</option>
+                <option *ngFor="let s of states" [ngValue]="s.intId">
+                  {{ s.strName }}
+                </option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">City</label>
+              <select
+                class="form-select"
+                [(ngModel)]="employeeForm.cityId"
+                name="employeeCityId"
+                [disabled]="!employeeForm.stateId"
+                required
+              >
+                <option [ngValue]="null">-- Select City --</option>
+                <option *ngFor="let city of cities" [ngValue]="city.intId">
+                  {{ city.strName }}
+                </option>
+              </select>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success">
+                {{ employeeForm.intId === 0 ? 'Add Employee' : 'Update Employee' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="resetEmployee()">
+                Clear
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employee List -->
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-warning">
+          <h5 class="mb-0">Employees</h5>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-bordered table-striped mb-0">
+            <thead>
+              <tr class="table-light">
+                <th>#</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Country</th>
+                <th>State</th>
+                <th>City</th>
+                <th style="width: 200px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let emp of employees; index as i">
+                <td>{{ i + 1 }}</td>
+                <td>{{ emp.varName }}</td>
+                <td>{{ emp.varPhoneNumber }}</td>
+                <td>{{ emp.varEmail }}</td>
+                <td>{{ emp.varDepartment }}</td>
+
+                <!-- These assume your API returns names; if not, map by ID in TS -->
+                <td>{{ emp.varCountry || emp.countryName }}</td>
+                <td>{{ emp.varState || emp.stateName }}</td>
+                <td>{{ emp.cityName }}</td>
+
+                <td>
+                  <button class="btn btn-sm btn-info me-2" (click)="editEmployee(emp)">Edit</button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteEmployee(emp.intId)">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="employees.length === 0">
+                <td colspan="9" class="text-center">No employees found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= COUNTRY SECTION ================= -->
+  <div class="row g-4 mb-5">
+    <!-- Country Form -->
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Manage Countries</h5>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="saveCountry()">
+            <input type="hidden" [(ngModel)]="countryForm.intId" name="countryIntId" />
+
+            <div class="mb-3">
+              <label class="form-label">Country Name</label>
+              <input type="text" [(ngModel)]="countryForm.strName" name="countryStrName"
+                class="form-control" placeholder="Enter country name" required />
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success">
+                {{ countryForm.intId === 0 ? 'Add Country' : 'Update Country' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="resetCountry()">Clear</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Country List -->
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Countries</h5>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover table-bordered mb-0">
+            <thead class="table-secondary">
+              <tr>
+                <th>#</th>
+                <th>Country</th>
+                <th style="width: 160px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of countries; index as i">
+                <td>{{ i + 1 }}</td>
+                <td>{{ c.strName }}</td>
+                <td>
+                  <button class="btn btn-sm btn-info me-2" (click)="editCountry(c)">Edit</button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteCountry(c.intId)">Delete</button>
+                </td>
+              </tr>
+              <tr *ngIf="countries.length === 0">
+                <td colspan="3" class="text-center">No countries found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= STATE SECTION ================= -->
+  <div class="row g-4 mb-5">
+    <!-- State Form -->
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">Manage States</h5>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="onSaveState()">
+            <input type="hidden" [(ngModel)]="stateForm.intId" name="stateIntId" />
+
+            <div class="mb-3">
+              <label class="form-label">Select Country</label>
+              <select class="form-select" [(ngModel)]="selectedcountryId" name="selectedCountry"
+                (change)="onCountryChange()" required>
+                <option [ngValue]="null">-- Select Country --</option>
+                <option *ngFor="let c of countries" [ngValue]="c.intId">{{ c.strName }}</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">State Name</label>
+              <input type="text" [(ngModel)]="stateForm.strName" name="stateStrName"
+                class="form-control" placeholder="Enter state name" required />
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success">
+                {{ stateForm.intId === 0 ? 'Add State' : 'Update State' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="resetState()">Clear</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- State List -->
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">States</h5>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover table-bordered mb-0">
+            <thead class="table-secondary">
+              <tr>
+                <th>#</th>
+                <th>State</th>
+                <th style="width: 160px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of states; index as i">
+                <td>{{ i + 1 }}</td>
+                <td>{{ s.strName }}</td>
+                <td>
+                  <button class="btn btn-sm btn-info me-2" (click)="editState(s)">Edit</button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteState(s.intId)">Delete</button>
+                </td>
+              </tr>
+              <tr *ngIf="states.length === 0">
+                <td colspan="3" class="text-center">
+                  {{ selectedcountryId ? 'No states found for selected country' : 'Select a country to load states' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CITY SECTION ================= -->
+  <div class="row g-4">
+    <!-- City Form -->
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">Manage Cities</h5>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="onsaveCitie()">
+            <input type="hidden" [(ngModel)]="cityForm.intId" name="cityIntId" />
+
+            <div class="mb-3">
+              <label class="form-label">Select State</label>
+              <select class="form-select" [(ngModel)]="selectedstateId" name="selectedstateId"
+                (change)="onStateChange()" required>
+                <option [ngValue]="null">-- Select State --</option>
+                <option *ngFor="let s of states" [ngValue]="s.intId">{{ s.strName }}</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">City Name</label>
+              <input type="text" [(ngModel)]="cityForm.strName" name="cityStrName"
+                class="form-control" placeholder="Enter City Name" required />
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success">
+                {{ cityForm.intId === 0 ? 'Add City' : 'Update City' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="resetCity()">Clear</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- City List -->
+    <div class="col-md-6">
+      <div class="card  shadow">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Cities</h5>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover table-bordered mb-0">
+            <thead class="table-secondary">
+              <tr>
+                <th>#</th>
+                <th>City</th>
+                <th style="width: 160px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of cities; index as i">
+                <td>{{ i + 1 }}</td>
+                <td>{{ c.strName }}</td>
+                <td>
+                  <button class="btn btn-sm btn-info me-2" (click)="editCity(c)">Edit</button>
+                  <button class="btn btn-sm btn-danger" (click)="deletecity(c.intId)">Delete</button>
+                </td>
+              </tr>
+              <tr *ngIf="cities.length === 0">
+                <td colspan="3" class="text-center">
+                  {{ selectedstateId ? 'No city found for selected state' : 'Select a state to load cities' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+TS File
+
+
+import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
+import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { BrowserModule } from '@angular/platform-browser';
+
+@Component({
+  selector: 'app-project',
+  standalone: true,
+  imports: [FormsModule, CommonModule],
+  templateUrl: './project.html',
+  styleUrls: ['./project.css']
+})
+
+export class Project implements OnInit {
+  http = inject(HttpClient);
+
+  // ===== Employees =====
+  employees: any[] = [];
+  employeeForm: any = {
+    intId: 0,
+    varName: '',
+    varPhoneNumber: '',
+    varEmail: '',
+    varDepartment: '',
+    countryId: null,
+    stateId: null,
+    cityId: null
+  };
+
+  // ===== Country / State / City (for Employee dropdowns) =====
+  countries: any[] = [];
+  states: any[] = [];
+  cities: any[] = [];
+
+  // ===== Country/State/City Management Forms (Your existing sections) =====
+  newCountrylist:
+    | {
+        intId: number;
+        strName: string;
+        intActive: number;
+        intCreatedBy: number;
+        dttCreationDate: null;
+      }
+    | undefined;
+
+  countryForm: any = { intId: 0, strName: '', intcountryId: 0, intActive: 1 };
+  stateForm: any = { intId: 0, strName: '', intcountryId: 0, intActive: 1 };
+  cityForm: any = { intId: 0, strName: '', intstateId: 0, intActive: 1 };
+
+  // If you still use these elsewhere
+  selectedcountryId: number | null = null;
+  selectedstateId: number | null = null;
+  selectedcityId: number | null = null;
+
+  // State temp holder for save/update
+  newStatelist: any = { intId: 0, strName: '', intcountryId: 0, intActive: 1 };
+  // City temp holder for save/update
+  newCitieslist: any = { intId: 0, strName: '', intstateId: 0, intActive: 1 };
+
+  ngOnInit(): void {
+    this.loadCountries();   // for employee dropdown & management
+    this.loadEmployees();
+  }
+
+  // ===================== EMPLOYEE =====================
+
+  loadEmployees() {
+    this.http
+      .get<any>('http://localhost:16686/API/Users/GetAllEmployees')
+      .subscribe((res) => {
+        this.employees = res.data || [];
+      });
+  }
+
+  /**
+   * Load states by selected employee country.
+   * Optionally preselect a stateId (used while editing).
+   */
+  private loadStatesByCountry(countryId: number | null, preselectStateId?: number) {
+    this.states = [];
+    this.cities = [];
+    this.employeeForm.stateId = null;
+    this.employeeForm.cityId = null;
+
+    if (!countryId) return;
+
+    this.http
+      .get<any>(
+        `http://localhost:16686/API/Users/GetStatesByCountryId?intcountryId=${countryId}`
+      )
+      .subscribe((res) => {
+        this.states = res.data || [];
+        if (preselectStateId) {
+          // If editing, preselect state and load cities
+          this.employeeForm.stateId = preselectStateId;
+          this.loadCitiesByState(preselectStateId, this.employeeForm.cityId);
+        }
+      });
+  }
+
+  /**
+   * Load cities by selected employee state.
+   * Optionally preselect a cityId (used while editing).
+   */
+  private loadCitiesByState(stateId: number | null, preselectCityId?: number | null) {
+    this.cities = [];
+    this.employeeForm.cityId = null;
+
+    if (!stateId) return;
+
+    this.http
+      .get<any>(
+        `http://localhost:16686/API/Users/GetCityByStateId?intstateId=${stateId}`
+      )
+      .subscribe((res) => {
+        this.cities = res.data || [];
+        if (preselectCityId) {
+          this.employeeForm.cityId = preselectCityId;
+        }
+      });
+  }
+
+  // Handlers for the EMPLOYEE form dropdowns
+  onEmployeeCountryChange() {
+    this.loadStatesByCountry(this.employeeForm.countryId);
+  }
+
+  onEmployeeStateChange() {
+    this.loadCitiesByState(this.employeeForm.stateId);
+  }
+
+  // Insert or Update Employee — sends IDs and resolved names
+ saveOrUpdateEmployee() {
+  // Map IDs → Names before sending
+  const selectedCountry = this.countries.find(c => c.intId === this.employeeForm.countryId);
+  const selectedState   = this.states.find(s => s.intId === this.employeeForm.stateId);
+  const selectedCity    = this.cities.find(ci => ci.intId === this.employeeForm.cityId);
+
+  this.employeeForm.countryName = selectedCountry ? selectedCountry.strName : '';
+  this.employeeForm.stateName   = selectedState ? selectedState.strName : '';
+  this.employeeForm.cityName    = selectedCity ? selectedCity.strName : '';
+
+  if (this.employeeForm.intId === 0) {
+    // Insert
+    this.http.post('http://localhost:16686/API/Users/AddEmployee', this.employeeForm)
+      .subscribe(() => this.loadEmployees());
+  } else {
+    // Update
+    this.http.post('http://localhost:16686/API/Users/UpdateEmployee/', this.employeeForm)
+      .subscribe(() => this.loadEmployees());
+  }
+}
+
+
+  // Edit employee: pre-load dependent dropdowns and preselect values
+  editEmployee(emp: any) {
+    this.employeeForm = {
+      intId: emp.intId || 0,
+      varName: emp.varName || '',
+      varPhoneNumber: emp.varPhoneNumber || '',
+      varEmail: emp.varEmail || '',
+      varDepartment: emp.varDepartment || '',
+      countryId: emp.countryId || null,
+      stateId: emp.stateId || null,
+      cityId: emp.cityId || null
+    };
+
+    // Load states for selected country, then preselect employee's state
+    this.loadStatesByCountry(this.employeeForm.countryId, emp.stateId);
+    // Cities will be loaded by loadStatesByCountry -> loadCitiesByState chain
+  }
+
+  // Delete employee
+  deleteEmployee(id: number) {
+    if (!confirm('Are you sure you want to delete this employee?')) return;
+    this.http
+      .delete<any>('http://localhost:16686/API/Users/DeleteEmployeeId', {
+        body: { intId: id }
+      })
+      .subscribe(() => {
+        alert('Employee deleted');
+        this.loadEmployees();
+      });
+  }
+
+  resetEmployee() {
+    this.employeeForm = {
+      intId: 0,
+      varName: '',
+      varPhoneNumber: '',
+      varEmail: '',
+      varDepartment: '',
+      countryId: null,
+      stateId: null,
+      cityId: null
+    };
+    this.states = [];
+    this.cities = [];
+  }
+
+  // ===================== COUNTRY / STATE / CITY MANAGEMENT =====================
+
+  loadCountries() {
+    this.http.get<any>('http://localhost:16686/API/Users/GetCountry').subscribe((res) => {
+      this.countries = res.data || [];
+    });
+  }
+
+  loadState() {
+    // If you need a full list for the management table
+    this.http.get<any>('http://localhost:16686/API/Users/GetState').subscribe((res) => {
+      this.states = res.data || [];
+    });
+  }
+
+  saveCountry() {
+    this.http
+      .post<any>('http://localhost:16686/API/Users/InsertUpdateCountry', this.countryForm)
+      .subscribe((res) => {
+        if (res && res.data) {
+          this.countryForm = {
+            intId: res.data.intId,
+            strName: res.data.strName,
+            intActive: res.data.intActive
+          };
+        }
+        this.loadCountries();
+      });
+  }
+
+  onsaveCitie() {
+    if (!this.selectedstateId) {
+      alert('Please select a State first');
+      return;
+    }
+    this.cityForm.intstateId = this.selectedstateId;
+    this.http
+      .post<any>('http://localhost:16686/API/Users/UpdateCity', this.cityForm)
+      .subscribe(() => {
+        alert('City saved successfully');
+        this.onStateChange(); // refresh city list below
+        this.resetCity();
+      });
+  }
+
+  getStatesByintCountryId() {
+    if (!this.selectedcountryId) return;
+    this.http
+      .get<any>(
+        `http://localhost:16686/API/Users/GetStatesByCountryId?intcountryId=${this.selectedcountryId}`
+      )
+      .subscribe((res) => {
+        this.states = res.data || [];
+      });
+  }
+
+  editCountry(c: any) {
+    this.countryForm = { ...c };
+  }
+
+  deleteCountry(id: number) {
+    if (!confirm('Delete this country?')) return;
+    this.http
+      .delete('http://localhost:16686/API/Users/DeleteCountryId', { body: { intId: id } })
+      .subscribe(() => {
+        alert('Deleted country');
+        this.loadCountries();
+      });
+  }
+
+  // (Fixed) use selectedstateId, not selectedcityId, in the guard
+  getcitieByintStateId() {
+    if (!this.selectedstateId) return;
+    this.http
+      .get<any>(
+        `http://localhost:16686/API/Users/GetCityByStateId?intstateId=${this.selectedstateId}`
+      )
+      .subscribe((res) => {
+        this.cities = res.data || [];
+      });
+  }
+
+  // Management section filters (independent of employee form)
+  onCountryChange() {
+    if (!this.selectedcountryId) {
+      this.states = [];
+      return;
+    }
+    this.http
+      .get<any>(
+        `http://localhost:16686/API/Users/GetStatesByCountryId?intcountryId=${this.selectedcountryId}`
+      )
+      .subscribe((res) => {
+        this.states = res.data || [];
+      });
+  }
+
+  onStateChange() {
+    if (!this.selectedstateId) {
+      this.cities = [];
+      return;
+    }
+    this.http
+      .get<any>(
+        `http://localhost:16686/API/Users/GetCityByStateId?intstateId=${this.selectedstateId}`
+      )
+      .subscribe((res) => {
+        this.cities = res.data || [];
+      });
+  }
+
+  onSaveState() {
+    if (!this.selectedcountryId) {
+      alert('Please select a country first');
+      return;
+    }
+    this.stateForm.intcountryId = this.selectedcountryId;
+    this.http
+      .post<any>('http://localhost:16686/api/Users/UpdateStates', this.stateForm)
+      .subscribe(() => {
+        alert('State saved successfully');
+        this.onCountryChange();
+        this.resetState();
+      });
+  }
+
+  resetState() {
+    this.stateForm = {
+      intId: 0,
+      strName: '',
+      intcountryId: this.selectedcountryId || 0,
+      intActive: 1
+    };
+  }
+
+  // (Fixed) Actually reset cityForm, not stateForm
+  resetCity() {
+    this.cityForm = {
+      intId: 0,
+      strName: '',
+      intstateId: this.selectedstateId || 0,
+      intActive: 1
+    };
+  }
+
+  editState(s: any) {
+    this.stateForm = { ...s };
+  }
+
+  editCity(s: any) {
+    this.cityForm = { ...s };
+  }
+
+  deleteState(id: number) {
+    if (!confirm('Delete this state?')) return;
+    this.http
+      .delete<any>('http://localhost:16686/api/Users/DeleteStateId', {
+        body: { intId: id }
+      })
+      .subscribe(() => {
+        alert('Deleted state');
+        this.onCountryChange();
+      });
+  }
+
+  resetCountry() {
+    this.newCountrylist = {
+      intId: 0,
+      strName: '',
+      intActive: 1,
+      intCreatedBy: 0,
+      dttCreationDate: null
+    };
+  }
+
+  // Optional: implement if you need it
+  deletecity(id: number) {
+    if (!confirm('Delete this city?')) return;
+    this.http
+      .delete<any>('http://localhost:16686/api/Users/DeleteCityId', { body: { intId: id } })
+      .subscribe(() => {
+        alert('Deleted city');
+        this.onStateChange();
+      });
+  }
+}
+
